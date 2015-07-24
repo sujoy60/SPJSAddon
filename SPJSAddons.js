@@ -131,6 +131,10 @@
 					"fin": c.dateTo,
 					"id": "End date field"
 				}
+/* 				, {
+					"fin": c.postcodes,
+					"id": "postcodes id"
+				} */
 				];
 				$.each(d, function (i, o) {
 					if (spjs.rm.data.fields[o.fin] === undefined) {
@@ -161,9 +165,11 @@
 					}
 					PreSaveAction = function () {
 						$(".spjs_rm_validation").remove();
+						alert(" incide presave ");
 						var 
 						//the below variable for P0109 NextHoliday date
 						nextHolidayDate,notInHoliday,hDate,compareHoliday,
+						holiday_friendlyName, holidayControl,holiday_end,
 						// finished adding 
 						b, res, rVal, selectedHour_start, selectedHour_end, selectedMinute_end, bSetting, dateRange_start, dateRange_end, dateRange_start_friendlyName, dateRange_end_friendlyName, dateMinControl, dateMaxControl, dayByDayObj, bookableDateRangesFriendly, dTemp, inDateRange, inTimeRange, vDate;
 						b = spjs.rm.validateDate();
@@ -198,16 +204,24 @@
 										"query": "<Where><Eq><FieldRef Name='Title' /><Value Type='Text'>" + rVal + "</Value></Eq></Where><OrderBy><FieldRef Name='FromDate' /></OrderBy>",
 										"viewFields": ["From_0", "To_0", "From_1", "To_1", "From_2", "To_2", "From_3", "To_3", "From_4", "To_4", "From_5", "To_5", "From_6", "To_6", "FromDate", "ToDate","NextHoliday"]
 									});
+									alert(" bSetting.count " + bSetting.count);
 									if (bSetting.count > 0) {
 										dayByDayObj = {};
 										bookableDateRangesFriendly = [];
+										alert("a.NextHoliday outside loop " );
 										$.each(bSetting.items, function (i, a) {
+										alert("a.NextHoliday inside loop " );
 											dateRange_start_friendlyName = "";
 											dateRange_end_friendlyName = "";
+											//nextHolidayDate ;
+											
 											if(a.NextHoliday !== null){
 												//P01019 -- added this variable for the project
+												//alert(" before assigning variable into nextHolidayDate  " + a.NextHoliday);
 												var nextHolidayDateinBet = a.NextHoliday;
-												nextHolidayDate = a.NextHoliday ;
+												//getFullYear() + "-" + dateMinControl.getMonth() + "-" + dateMinControl.getDate()
+												nextHolidayDate = a.NextHoliday ;//+ '-' + nextHolidayDateinBet.getMonth() ;//+ '-' + nextHolidayDateinBet.getFullYear() ;
+												//alert("THIS THIS a.NextHoliday inside IF statement " + nextHolidayDateinBet);
 												//changes ends here 
 											
 											}
@@ -216,10 +230,14 @@
 											
 												dateRange_start = spjs.rm.isoToDateObj(a.FromDate);
 												dateRange_start.setHours(parseInt(a["From_" + dateRange_start.getDay()], 10));
+												//alert(" THIS dateRange_start  " + dateRange_start );
 												dateMinControl = spjs.rm.isoToDateObj(a.FromDate);
 												dateMinControl.setHours(12);
+												//alert(" dateMinControl  " + dateMinControl );
 												a.FromDate = a.FromDate.split(" ")[0] + " " + a["From_" + dateRange_start.getDay()] + ":00:00";
+												//alert(" a.FromDate  " + a.FromDate );
 												dateRange_start_friendlyName = spjs.rm.isoToCurrFormat(a.FromDate, false)
+												//alert(" THIS dateRange_start_friendlyName  " + dateRange_start_friendlyName );
 											}
 											if (a.ToDate !== null) {
 												dateRange_end = spjs.rm.isoToDateObj(a.ToDate);
@@ -229,6 +247,20 @@
 												a.ToDate = a.ToDate.split(" ")[0] + " " + a["To_" + dateRange_end.getDay()] + ":00:00";
 												dateRange_end_friendlyName = spjs.rm.isoToCurrFormat(a.ToDate, false)
 											}
+											//holiday_friendlyName, holidayControl,holiday_end,
+											if (a.NextHoliday !== null) {
+											alert(" BEFORE holiday_end  " + a.NextHoliday );
+												holiday_end = spjs.rm.isoToDateObj(a.NextHoliday);
+												//alert(" XXX holidayControl  " + holiday_end.getFullYear() + " " + holiday_end.getMonth()+ " " + holiday_end.getDate());
+												holiday_end.setHours(parseInt(a["To_" + holiday_end.getDay()], 10));
+												holidayControl = spjs.rm.isoToDateObj(a.NextHoliday);
+												holidayControl.setHours(12);
+												
+												a.NextHoliday = a.NextHoliday.split(" ")[0] + " " + a["To_" + holiday_end.getDay()] + ":00:00";
+												//alert(" a.nextHolidayDate  " + a.NextHoliday );
+												holiday_friendlyName = spjs.rm.isoToCurrFormat(a.NextHoliday, false)
+												//alert(" THIS holiday_friendlyName  " + holiday_friendlyName );
+											}												
 											if (dateRange_start_friendlyName !== "" || dateRange_end_friendlyName !== "") {
 												bookableDateRangesFriendly.push(dateRange_start_friendlyName + " - " + dateRange_end_friendlyName)
 											}
@@ -247,10 +279,23 @@
 										notInHoliday = true;
 
 										while (dTemp < b.to_date) {
+											//alert(" before VDATE " + dTemp.getFullYear() + " UUU " + dTemp.getMonth() + " UUU " + dTemp.getDate() );
+											//alert(" b.from_date. " + b.from_date);
 											vDate = dayByDayObj[dTemp.getFullYear() + "-" + dTemp.getMonth() + "-" + dTemp.getDate()];
 											compareHoliday = b.from_date.getFullYear() + "-" + (b.from_date.getMonth()+1) + "-" + b.from_date.getDate() ;
-											hDate = nextHolidayDate.substring(0,4)+ "-" + nextHolidayDate.substring(6,7) + "-" + nextHolidayDate.substring(8,10);
-
+/* 											alert('vDate 	' + vDate.date + '   Done');										
+										alert("BEFORE HOME " + nextHolidayDate );
+										alert("THAT HOME FULL" + nextHolidayDate.substring(0,4)+ "-" + nextHolidayDate.substring(6,7) + "-" + nextHolidayDate.substring(8,10));
+										alert("THAT HOME Month" + nextHolidayDate.substring(6,7) ) ;
+										alert("THAT HOME Month" + nextHolidayDate.substring(8,10) ) ; 
+										
+										hDate = dayByDayObj[nextHolidayDate.substring(0,4)+ "-" + nextHolidayDate.substring(6,7) + "-" + nextHolidayDate.substring(7,9)];
+										alert(" THAT hdate  " + hdate.date);	 */									
+											
+											//alert("THAT dTempDate"  + dTemp.getFullYear() + "-" + dTemp.getMonth() + "-" + dTemp.getDate())
+										hDate = holiday_end.getFullYear() + "-" + (holiday_end.getMonth()+1)+ "-" + holiday_end.getDate();//holiday_friendlyName.substring(0,4)+ "-" + nextHolidayDate.substring(6,7) + "-" + nextHolidayDate.substring(8,10);
+										
+										alert( "XXX hDate " + hDate + " XXX compareHoliday " +compareHoliday); 
 										if (vDate === undefined) {
 												if (spjs.rm.data.debug) {
 													console.log("Bookable range:\n" + bookableDateRangesFriendly.join("\n"));
@@ -290,29 +335,40 @@
 														break
 													}
 												}
-												//P0109 -- added the below IF statement for checking whether the booking date clashes with a public holiday.
+												
 												if (b.to_date.toDateString() === vDate.date) {
+												alert("BEFORE THIS bToDate Take1 ");
+												//dateRange_end_friendlyName = spjs.rm.isoToCurrFormat(a.ToDate, false)
+												alert(" hdate" + hDate) ; // newbtodate =b.to_date.toDateString();
+												alert("compareHoliday " + compareHoliday) ;// + " THIS nextHolidayDate " + nextHolidayDate );
 												if( compareHoliday === hDate)
 													{
-														//set the variable notInHoliday to flase.
+														alert("Inside Not inDholiday if Statement");
+														//notInTimeRange": ["{0} can be booked from {1} on a {2}.", "{0} can be booked to {1} on a {2}."],
+														//spjs.rm.appendError(spjs.rm.data.args.dateFrom, spjs.rm.text.notInTimeRange[0].replace("{0}", rVal).replace("{1}", vDate.fromHour).replace("{2}", spjs.rm.text.dayNumObj[b.from_day]));
+														//"onPublicHoliday": ["{0} cannot be booked on {1}.Its a public holiday."],
+														//"onPublicHoliday": ["{0} cannot be booked on {1}.Its a public holiday."],
+														
 														notInHoliday = false;
+														alert(" notInHoliday SET to FALSE ");
 														break
 													}
-												}	
-												//P0109 changes end here.													
+												}												
 											}
+
+											//alert("inside ELSE statement");									
 
 											dTemp.setDate(dTemp.getDate() + 1)
 										}
-										//P0109 -- added the below IF statement for checking whether the booking date clashes with a public holiday.
-										//Sets the error message to reflect the same.
 										if (!notInHoliday) {
-											spjs.rm.appendError(spjs.rm.data.args.dateFrom, spjs.rm.text.onPublicHoliday[0].replace("{0}", b.to_date.toDateString()));											
+											alert("In Holiday --Go Back");
+											//onPublicHoliday
+											spjs.rm.appendError(spjs.rm.data.args.dateFrom, spjs.rm.text.onPublicHoliday[0].replace("{0}", b.to_date.toDateString()));
 											return false
-										}		
-										//P0109 changes end here.										
-										
+										}										
 										if (!inDateRange) {
+										
+										
 											spjs.rm.appendError(spjs.rm.data.args.resourceField, spjs.rm.text.bookableDateRange.replace("{0}", rVal).replace("{1}", bookableDateRangesFriendly.join("<br>")));
 											return false
 										}
@@ -345,10 +401,12 @@
 			},
 			"addOrUpdateList": function (b) {alert('in addOrUpdateList');
 				if (spjs.utility === undefined || spjs.utility.version < spjs.rm.data.utilityVersion) {
+					alert('in 1st IF BLOCK');
 					alert("[SPJS Resource Management plugin]\n\nYour current version of SPJS-Utility.js is: " + String(spjs.utility.version) + ". You must upgrade to v" + String(spjs.rm.data.utilityVersion) + " or above.");
 					return
 				}
 				if (!b && !confirm("Add or update the list: " + spjs.rm.data.settingsListName + "?")) {
+							alert('in 2nd IF BLOCK');
 					return
 				}
 				var d = ["<CHOICES>"],
@@ -673,9 +731,7 @@
 					"wrongDateFormat": "Please use this date format: {0}",
 					"notInTimeRange": ["{0} can be booked from {1} on a {2}.", "{0} can be booked to {1} on a {2}."],
 					"notInDateRange": ["{0} cannot be booked before {1}.", "{0} cannot be booked after {1}."],
-					//P0109 changes : Addded the below variable for public holiday error message
 					"onPublicHoliday": ["Truck cannot be booked on {0}.Its a public holiday."],
-					//P0109 changes end here.
 					"bookableDateRange": "The bookable date ranges for {0} are:<br>{1}",
 					"dayNumObj": {
 						0: "Sunday",
@@ -756,13 +812,15 @@
 						}
 						c.unshift("<Where>");
 						c.push("</Where>");
+						//alert(' C ' + c );
 						res = spjs_QueryItems({
 							"listName": spjs.rm.data.args.listName,
 							"listBaseUrl": spjs.rm.data.args.listBaseUrl,
 							"query": c.join(''),
 							"viewFields": ["ID", "Title", "Editor", spjs.rm.data.args.dateFrom, spjs.rm.data.args.dateTo]
 						});
-											
+						//alert("res " + res.count);
+						
 						
 /* 					    
 						if (res.count > 0) {
@@ -791,6 +849,7 @@
 							//return false
 						}
 						
+						//alert("result " + result);
 					}
 					if(overlapcount == 0)
 					{
@@ -926,6 +985,7 @@
 						}
 					}
 				});
+				//alert("date a " + a + "  result " +result);
 				return result
 			},
 			"toISO8601": function (a) {
